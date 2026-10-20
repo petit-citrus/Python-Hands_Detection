@@ -1,38 +1,18 @@
 # Python-Hands_Detection
 
-L'objectif est de développer une application Python utilisant une webcam pour détecter les mains en temps réel, afficher leur squelette et compter le nombre de doigts levés.
+L'objectif est de développer une application Python utilisant une webcam pour détecter les mains en temps réel et afficher leur squelette.
 
 ## Technologies utilisées
 
-- **Python** : langage de programmation.
+- **Python** (3.11 ou 3.12) : langage de programmation.
 - **OpenCV** : capture et affichage des images de la webcam.
+- **MediaPipe** (`0.10.14`) : détection des mains et extraction des 21 points clés (landmarks).
 - **NumPy** : manipulation des données numériques.
-- **Bibliothèque de détection des mains** : à préciser lors de l'intégration.
 
 ## Organisation du projet
 
 ```text
-
-```
-
-## Installation et lancement
-
-**1. Installer les dépendances**
-
-```bash
-python -m pip install -r requirements.txt
-```
-
-**2. Lancer l'application**
-
-```bash
-python main.py
-```
-
-**3. Utilisation**
-
-- Autoriser l'accès à la webcam si nécessaire.
-- La vidéo s'affiche dans une fenêtre.
-- Appuyer sur **Q** pour quitter.
-
-
+├── main.py            # Capture vidéo, interface et boucle principale
+├── hand_analyzer.py   # Module de détection et traçage du squelette des mains
+├── pyproject.toml     # Configuration du projet et dépendances (uv)
+└── requirements.txt   # Liste des dépendances (pip)
