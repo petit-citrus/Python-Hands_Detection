@@ -6,7 +6,6 @@ L'objectif est de développer une application Python utilisant une webcam pour d
 
 - **Python** (3.11 ou 3.12) : langage de programmation.
 - **OpenCV** : capture et affichage des images de la webcam.
-- **MediaPipe** (`0.10.14`) : détection des mains et extraction des 21 points clés (landmarks).
 - **NumPy** : manipulation des données numériques.
 
 ## Organisation du projet

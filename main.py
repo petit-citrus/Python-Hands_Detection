@@ -1,5 +1,8 @@
+"""Point d'entrée principal de l'application (Capture vidéo et Interface OpenCV)."""
+
 import cv2
 from hand_analyzer import HandAnalyzer
+from hand_analyzer_mediapipe import MediaPipeHandAnalyzer
 
 
 def main():
@@ -14,72 +17,75 @@ def main():
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-    # Créer la fenêtre
-    nom_fenetre = "TP4 - Detection des mains"
+    # Créer la fenêtre principale
+    nom_fenetre = "TP4 - Detection des mains (OpenCV)"
     cv2.namedWindow(nom_fenetre, cv2.WINDOW_NORMAL)
+    nom_fenetre_mediapipe = "Detection des mains (MediaPipe)"
+    cv2.namedWindow(nom_fenetre_mediapipe, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(nom_fenetre, 800, 600)
+    cv2.resizeWindow(nom_fenetre_mediapipe, 800, 600)
+    cv2.moveWindow(nom_fenetre, 0, 0)
+    cv2.moveWindow(nom_fenetre_mediapipe, 810, 0)
 
-    # Initialiser le module de détection des mains
-    with HandAnalyzer() as analyzer:
-        try:
-            while True:
-                # Capturer une image
-                succes, image = camera.read()
+    # Initialiser l'analyseur géométrique OpenCV
+    analyzer = HandAnalyzer()
+    mediapipe_analyzer = MediaPipeHandAnalyzer()
 
-                if not succes:
-                    print("Erreur : capture impossible.")
-                    break
+    try:
+        while True:
+            # Capturer une image
+            succes, image = camera.read()
 
-                # Effet miroir
-                image = cv2.flip(image, 1)
+            if not succes:
+                print("Erreur : capture impossible.")
+                break
 
-                # Détecter les mains et tracer le squelette
-                image, hands_data = analyzer.process_frame(image)
+            # Effet miroir
+            image = cv2.flip(image, 1)
 
-                # Afficher la latéralité (Left / Right) sur chaque main détectée
-                for hand in hands_data:
-                    cv2.putText(
-                        image,
-                        hand["handedness"],
-                        (hand["center"][0] - 40, hand["center"][1] - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.7,
-                        (255, 255, 255),
-                        2,
-                    )
+            mediapipe_image, mediapipe_hands = mediapipe_analyzer.process_frame(
+                image.copy()
+            )
 
-                # Afficher le titre
-                cv2.putText(
-                    image,
-                    "Detection des mains",
-                    (20, 40),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.8,
-                    (0, 255, 0),
-                    2,
-                )
+            # Détecter la main et tracer le squelette dans la zone ROI
+            image, hand_data = analyzer.process_frame(image)
 
-                # Afficher l'instruction
-                cv2.putText(
-                    image,
-                    "Appuyer sur Q pour quitter",
-                    (20, 460),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.6,
-                    (255, 255, 255),
-                    2,
-                )
+            # Afficher le titre
+            cv2.putText(
+                image,
+                "Detection des mains",
+                (20, 40),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.8,
+                (0, 255, 0),
+                2,
+            )
 
-                # Afficher la vidéo
-                cv2.imshow(nom_fenetre, image)
+            # Afficher l'instruction
+            cv2.putText(
+                image,
+                "Appuyer sur Q pour quitter",
+                (20, 460),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (255, 255, 255),
+                2,
+            )
 
-                # Quitter avec Q
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
+            # Afficher la vidéo principale et la fenêtre du masque binaire (très apprécié en TP)
+            cv2.imshow(nom_fenetre, image)
+            cv2.imshow(nom_fenetre_mediapipe, mediapipe_image)
+            cv2.imshow("Masque Binaire (YCrCb)", hand_data["mask"])
 
-        finally:
-            # Libérer les ressources
-            camera.release()
-            cv2.destroyAllWindows()
+            # Quitter avec Q
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+
+    finally:
+        # Libérer les ressources
+        camera.release()
+        mediapipe_analyzer.close()
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
