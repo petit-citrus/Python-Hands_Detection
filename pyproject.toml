@@ -1,0 +1,9 @@
+[project]
+name = "python-hands-detection"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "opencv-python",
+    "mediapipe==0.10.14",
+    "numpy",
+]
