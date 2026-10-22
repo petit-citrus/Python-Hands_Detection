@@ -121,7 +121,7 @@ class HandAnalyzer:
         cv2.drawContours(annotated_frame, [contour_global], -1, (180, 180, 180), 1)
         cv2.drawContours(annotated_frame, [hull_points], -1, (0, 255, 0), 2)
 
-        # ÉTAPE 6 : Défauts de convexité et filtrage géométrique des doigts
+        # Défauts de convexité et filtrage géométrique des doigts
         fingertips = []
         if len(hull_indices) > 3:
             defects = cv2.convexityDefects(contour_global, hull_indices)
@@ -146,22 +146,20 @@ class HandAnalyzer:
                     # depth est codé en virgule fixe par OpenCV (diviser par 256 pour avoir des pixels)
                     real_depth = depth / 256.0
 
-                    # Si l'angle est aigu (< 90°) et le creux assez profond (> 20 px),
-                    # alors ce sont bien deux doigts écartés
+                    # Si l'angle est aigu (< 90°) et le creux assez profond (> 20 px), alors ce sont bien deux doigts écartés
                     if angle <= 90 and real_depth > 20:
                         # Point bleu au fond du creux inter-doigt
                         cv2.circle(annotated_frame, far, 5, (255, 0, 0), -1)
                         self._add_unique_point(fingertips, start)
                         self._add_unique_point(fingertips, end)
 
-        # Cas particulier : si un seul doigt est levé (aucun creux entre 2 doigts),
-        # on prend le point le plus haut du contour s'il est bien au-dessus de la paume
+        # Cas particulier : si un seul doigt est levé (aucun creux entre 2 doigts), on prend le point le plus haut du contour s'il est bien au-dessus de la paume
         if not fingertips:
             topmost = tuple(contour_global[contour_global[:, :, 1].argmin()][0])
             if center[1] - topmost[1] > 60:
                 fingertips.append(topmost)
 
-        # ÉTAPE 7 : Traçage du squelette (Lignes reliant le centre aux bouts des doigts)
+        # Traçage du squelette (Lignes reliant le centre aux bouts des doigts)
         for tip in fingertips:
             # Ligne d'os (jaune/orange) entre le centre de la paume et le bout du doigt
             cv2.line(annotated_frame, center, tip, (0, 200, 255), 2)
@@ -172,7 +170,7 @@ class HandAnalyzer:
         cv2.circle(annotated_frame, center, 8, (255, 0, 255), -1)
 
         hand_data["fingertips"] = fingertips
-        # La géométrie ne connaît pas les articulations : elle compte donc les
+        # La géométrie ne connaît pas les articulations, elle compte donc les
         # pointes validées par les défauts de convexité. C'est une estimation.
         hand_data["finger_count"] = min(len(fingertips), 5)
         cv2.putText(
